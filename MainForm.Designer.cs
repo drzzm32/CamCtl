@@ -154,9 +154,13 @@
             // 
             this.focusList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.focusList.Items.AddRange(new object[] {
+            "32",
             "64",
+            "96",
             "128",
-            "192"});
+            "160",
+            "192",
+            "224"});
             this.focusList.MergeIndex = 0;
             this.focusList.Name = "focusList";
             this.focusList.Size = new System.Drawing.Size(75, 25);

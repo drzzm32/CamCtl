@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 
 using TIS.Imaging;
@@ -25,7 +26,7 @@ namespace CamCtl
             btnCapture.Enabled = false;
             btnFocus.Enabled = false;
 
-            focusList.SelectedIndex = 1;
+            focusList.SelectedIndex = 3;
         }
 
         private void DoCapture()
@@ -56,7 +57,6 @@ namespace CamCtl
             camCtl.ShowDeviceSettingsDialog();
             if (camCtl.DeviceValid)
             {
-                camCtl.MemoryCurrentGrabberColorformat = ICImagingControlColorformats.ICY8;
                 camCtl.OverlayBitmapPosition = pathPosition;
                 camCtl.LiveCaptureContinuous = true;
 
@@ -125,7 +125,7 @@ namespace CamCtl
         {
             focusList.Enabled = !btnFocus.Checked;
             if (btnFocus.Checked)
-                threshold = (focusList.SelectedIndex + 1) * 64;
+                threshold = (focusList.SelectedIndex + 1) * 32;
         }
 
         private void camCtl_SizeChanged(object sender, EventArgs e)
@@ -222,8 +222,25 @@ namespace CamCtl
                     };
                     bmp = filters.Apply(bmp);
 
+                    ColorRemapping remapping = new ColorRemapping
+                    {
+                        RedMap = new byte[256],
+                        GreenMap = new byte[256],
+                        BlueMap = new byte[256]
+                    };
+                    remapping.RedMap[255] = 255;
+
+                    Bitmap overlay = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format24bppRgb);
+                    using (Graphics gr = Graphics.FromImage(overlay))
+                    {
+                        gr.DrawImage(bmp, 0, 0);
+                        gr.Save();
+                        gr.Dispose();
+                    }
+                    overlay = remapping.Apply(overlay);
+
                     var g = ob.GetGraphics();
-                    g.DrawImage(bmp, 0, 0);
+                    g.DrawImage(overlay, 0, 0);
                     ob.ReleaseGraphics(g);
                 }
 
