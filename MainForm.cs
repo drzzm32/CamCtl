@@ -78,14 +78,6 @@ namespace CamCtl
             ResetButtons();
         }
 
-        private void MainForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Space)
-            {
-                DoCapture();
-            }
-        }
-
         private void menuExit_Click(object sender, EventArgs e)
         {
             Close();
@@ -94,6 +86,11 @@ namespace CamCtl
         private void openCamera_Click(object sender, EventArgs e)
         {
             SelectCamera();
+        }
+
+        private void saveImage_Click(object sender, EventArgs e)
+        {
+            DoCapture();
         }
 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -246,6 +243,6 @@ namespace CamCtl
 
                 DrawCoordinatesystem(ob, Color.Aqua, false);
             }
-        }  
+        }
     }
 }

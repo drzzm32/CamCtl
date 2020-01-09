@@ -42,6 +42,7 @@
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openCamera = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveImage = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuExit = new System.Windows.Forms.ToolStripMenuItem();
             this.status = new System.Windows.Forms.StatusStrip();
@@ -180,6 +181,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openCamera,
+            this.saveImage,
             this.toolStripSeparator1,
             this.menuExit});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -193,6 +195,14 @@
             this.openCamera.Size = new System.Drawing.Size(204, 22);
             this.openCamera.Text = "Open Camera";
             this.openCamera.Click += new System.EventHandler(this.openCamera_Click);
+            // 
+            // saveImage
+            // 
+            this.saveImage.Name = "saveImage";
+            this.saveImage.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.saveImage.Size = new System.Drawing.Size(204, 22);
+            this.saveImage.Text = "Save Image";
+            this.saveImage.Click += new System.EventHandler(this.saveImage_Click);
             // 
             // toolStripSeparator1
             // 
@@ -237,7 +247,6 @@
             this.Name = "MainForm";
             this.Text = "CamCtl";
             this.Load += new System.EventHandler(this.MainForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.camCtl)).EndInit();
             this.tool.ResumeLayout(false);
             this.tool.PerformLayout();
@@ -269,6 +278,7 @@
         private System.Windows.Forms.ToolStripStatusLabel stautsLabel;
         private System.Windows.Forms.ToolStripButton btnFocus;
         private System.Windows.Forms.ToolStripComboBox focusList;
+        private System.Windows.Forms.ToolStripMenuItem saveImage;
     }
 }
 
