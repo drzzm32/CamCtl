@@ -6,27 +6,54 @@ using System.Drawing.Drawing2D;
 
 using TIS.Imaging;
 
+using AForge.Imaging;
 using AForge.Imaging.Filters;
 
 namespace CamCtl
 {
     public partial class MainForm : Form
     {
+        private Histogram histoForm;
+
         public MainForm()
         {
             InitializeComponent();
+
+            histoForm = new Histogram();
+
+            focusList.SelectedIndex = 3;
         }
 
         private readonly PathPositions pathPosition = PathPositions.Display;
         private int threshold = 128;
 
-        private void ResetButtons()
+        private void MoveHistoForm()
         {
+            histoForm.Left = Left + Width;
+            histoForm.Top = Top + 32;
+
+            int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            if (histoForm.Left > screenWidth)
+                histoForm.Left = screenWidth - histoForm.Width;
+            if (histoForm.Top > screenHeight)
+                histoForm.Top = screenHeight - histoForm.Height;
+        }
+
+        private void EnableButtons()
+        {
+            btnStop.Enabled = true;
+            btnConfig.Enabled = true;
+            btnCapture.Enabled = true;
+            btnFocus.Enabled = true;
+        }
+
+        private void DisableButtons()
+        {
+            btnStop.Enabled = false;
             btnConfig.Enabled = false;
             btnCapture.Enabled = false;
             btnFocus.Enabled = false;
-
-            focusList.SelectedIndex = 3;
         }
 
         private void DoCapture()
@@ -48,6 +75,7 @@ namespace CamCtl
                 float scaleY = (float)camCtl.Height / camCtl.ImageHeight;
                 camCtl.LiveDisplayZoomFactor = Math.Min(scaleX, scaleY);
             }
+            MoveHistoForm();
         }
 
         private void SelectCamera()
@@ -65,17 +93,20 @@ namespace CamCtl
                 camCtl.LiveDisplayHeight = camCtl.ImageHeight;
                 ChangeScale();
                 camCtl.LiveStart();
-                btnConfig.Enabled = true;
-                btnCapture.Enabled = true;
-                btnFocus.Enabled = true;
+                EnableButtons();
             }
             else
-                ResetButtons();
+                DisableButtons();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            ResetButtons();
+            DisableButtons();
+        }
+
+        private void MainForm_Move(object sender, EventArgs e)
+        {
+            MoveHistoForm();
         }
 
         private void menuExit_Click(object sender, EventArgs e)
@@ -96,7 +127,10 @@ namespace CamCtl
         private void btnPlay_Click(object sender, EventArgs e)
         {
             if (camCtl.DeviceValid)
+            {
                 camCtl.LiveStart();
+                EnableButtons();
+            }
             else
                 SelectCamera();
         }
@@ -105,6 +139,7 @@ namespace CamCtl
         {
             if (camCtl.LiveVideoRunning)
                 camCtl.LiveStop();
+            DisableButtons();
         }
 
         private void btnConfig_Click(object sender, EventArgs e)
@@ -125,6 +160,19 @@ namespace CamCtl
                 threshold = (focusList.SelectedIndex + 1) * 32;
         }
 
+        private void btnHisto_CheckedChanged(object sender, EventArgs e)
+        {
+            if (btnHisto.Checked)
+            {
+                histoForm.Show();
+                MoveHistoForm();
+            }
+            else
+            {
+                histoForm.Hide();
+            }
+        }
+
         private void camCtl_SizeChanged(object sender, EventArgs e)
         {
             ChangeScale();
@@ -132,7 +180,7 @@ namespace CamCtl
 
         private void camCtl_DeviceLost(object sender, ICImagingControl.DeviceLostEventArgs e)
         {
-            ResetButtons();
+            DisableButtons();
         }
 
         private void DrawCoordinatesystem(OverlayBitmap ob, Color clr, bool hasText = true)
@@ -243,6 +291,14 @@ namespace CamCtl
 
                 DrawCoordinatesystem(ob, Color.Aqua, false);
             }
+        }
+
+        private void camCtl_ImageAvailable(object sender, ICImagingControl.ImageAvailableEventArgs e)
+        {
+            var buffer = e.ImageBuffer;
+            Bitmap bmp = new Bitmap(buffer.Bitmap);
+            bmp = Grayscale.CommonAlgorithms.RMY.Apply(bmp);
+            histoForm.FromImage(bmp);
         }
     }
 }

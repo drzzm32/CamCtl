@@ -39,6 +39,8 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnFocus = new System.Windows.Forms.ToolStripButton();
             this.focusList = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnHisto = new System.Windows.Forms.ToolStripButton();
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openCamera = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,6 +70,7 @@
             this.camCtl.Size = new System.Drawing.Size(640, 480);
             this.camCtl.TabIndex = 0;
             this.camCtl.OverlayUpdate += new System.EventHandler<TIS.Imaging.ICImagingControl.OverlayUpdateEventArgs>(this.camCtl_OverlayUpdate);
+            this.camCtl.ImageAvailable += new System.EventHandler<TIS.Imaging.ICImagingControl.ImageAvailableEventArgs>(this.camCtl_ImageAvailable);
             this.camCtl.LivePrepared += new System.EventHandler(this.camCtl_LivePrepared);
             this.camCtl.DeviceLost += new System.EventHandler<TIS.Imaging.ICImagingControl.DeviceLostEventArgs>(this.camCtl_DeviceLost);
             this.camCtl.SizeChanged += new System.EventHandler(this.camCtl_SizeChanged);
@@ -83,7 +86,9 @@
             this.btnCapture,
             this.toolStripSeparator3,
             this.btnFocus,
-            this.focusList});
+            this.focusList,
+            this.toolStripSeparator4,
+            this.btnHisto});
             this.tool.Location = new System.Drawing.Point(0, 25);
             this.tool.Name = "tool";
             this.tool.Size = new System.Drawing.Size(640, 25);
@@ -167,6 +172,22 @@
             this.focusList.Size = new System.Drawing.Size(75, 25);
             this.focusList.ToolTipText = "Threshold";
             // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btnHisto
+            // 
+            this.btnHisto.CheckOnClick = true;
+            this.btnHisto.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnHisto.Image = ((System.Drawing.Image)(resources.GetObject("btnHisto.Image")));
+            this.btnHisto.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnHisto.Name = "btnHisto";
+            this.btnHisto.Size = new System.Drawing.Size(23, 22);
+            this.btnHisto.Text = "Histogram";
+            this.btnHisto.CheckedChanged += new System.EventHandler(this.btnHisto_CheckedChanged);
+            // 
             // menu
             // 
             this.menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -247,6 +268,7 @@
             this.Name = "MainForm";
             this.Text = "CamCtl";
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Move += new System.EventHandler(this.MainForm_Move);
             ((System.ComponentModel.ISupportInitialize)(this.camCtl)).EndInit();
             this.tool.ResumeLayout(false);
             this.tool.PerformLayout();
@@ -279,6 +301,8 @@
         private System.Windows.Forms.ToolStripButton btnFocus;
         private System.Windows.Forms.ToolStripComboBox focusList;
         private System.Windows.Forms.ToolStripMenuItem saveImage;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripButton btnHisto;
     }
 }
 
