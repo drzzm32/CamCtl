@@ -86,6 +86,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.serial = new System.IO.Ports.SerialPort(this.components);
             this.saveLog = new System.Windows.Forms.FolderBrowserDialog();
+            this.boxLoop = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.camCtl)).BeginInit();
             this.tool.SuspendLayout();
             this.menu.SuspendLayout();
@@ -563,6 +565,8 @@
             // groupMeasure
             // 
             this.groupMeasure.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupMeasure.Controls.Add(this.label12);
+            this.groupMeasure.Controls.Add(this.boxLoop);
             this.groupMeasure.Controls.Add(this.proBar);
             this.groupMeasure.Controls.Add(this.btnStart);
             this.groupMeasure.Controls.Add(this.checkExtra);
@@ -591,9 +595,9 @@
             // 
             this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnStart.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnStart.Location = new System.Drawing.Point(159, 49);
+            this.btnStart.Location = new System.Drawing.Point(205, 49);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(142, 48);
+            this.btnStart.Size = new System.Drawing.Size(96, 48);
             this.btnStart.TabIndex = 8;
             this.btnStart.Text = "START\r\nMEASUREMENT";
             this.btnStart.UseVisualStyleBackColor = true;
@@ -655,7 +659,7 @@
             this.boxTotalCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.boxTotalCount.Location = new System.Drawing.Point(89, 76);
             this.boxTotalCount.Name = "boxTotalCount";
-            this.boxTotalCount.Size = new System.Drawing.Size(64, 21);
+            this.boxTotalCount.Size = new System.Drawing.Size(110, 21);
             this.boxTotalCount.TabIndex = 2;
             this.boxTotalCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.boxTotalCount.TextChanged += new System.EventHandler(this.boxTotalCount_TextChanged);
@@ -665,7 +669,7 @@
             this.boxTotalLen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.boxTotalLen.Location = new System.Drawing.Point(89, 49);
             this.boxTotalLen.Name = "boxTotalLen";
-            this.boxTotalLen.Size = new System.Drawing.Size(64, 21);
+            this.boxTotalLen.Size = new System.Drawing.Size(32, 21);
             this.boxTotalLen.TabIndex = 1;
             this.boxTotalLen.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.boxTotalLen.TextChanged += new System.EventHandler(this.boxTotalLen_TextChanged);
@@ -683,6 +687,25 @@
             // serial
             // 
             this.serial.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serial_DataReceived);
+            // 
+            // boxLoop
+            // 
+            this.boxLoop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.boxLoop.Location = new System.Drawing.Point(167, 49);
+            this.boxLoop.Name = "boxLoop";
+            this.boxLoop.Size = new System.Drawing.Size(32, 21);
+            this.boxLoop.TabIndex = 10;
+            this.boxLoop.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label12
+            // 
+            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(133, 52);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(29, 12);
+            this.label12.TabIndex = 11;
+            this.label12.Text = "Loop";
             // 
             // MainForm
             // 
@@ -780,6 +803,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.ProgressBar proBar;
         private System.Windows.Forms.Button btnJog;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TextBox boxLoop;
     }
 }
 

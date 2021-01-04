@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Windows.Forms;
 
+using Renishaw.Calibration.Laser.Service;
+using Renishaw.Calibration.WeatherStationService.Service;
+
 namespace CamCtl
 {
     static class Program
@@ -13,7 +16,24 @@ namespace CamCtl
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            using (var xcHost = new LocalXCHost())
+            {
+                xcHost.Open();
+                LocalXLHost xlHost = null;
+                try
+                {
+                    xlHost = new LocalXLHost();
+                    xlHost.Open();
+                    Application.Run(new MainForm());
+                }
+                finally
+                {
+                    if (xlHost != null)
+                    {
+                        xlHost.Dispose();
+                    }
+                }
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ using Renishaw.Calibration;
 using Renishaw.Calibration.Laser;
 using Renishaw.Calibration.Laser.Service;
 using System.IO;
+using System.Diagnostics;
 
 namespace CamCtl
 {
@@ -59,7 +60,7 @@ namespace CamCtl
         {
             void update(object obj)
             {
-                length = value.ValueOf * 1000 * 2; // retro-measurement
+                length = value.ValueOf * 1000;
                 ledMeasure.Value = length.ToString("F6");
             }
             context.Post(update, null);
@@ -427,12 +428,21 @@ namespace CamCtl
                 try
                 {
                     serial.Open();
+
+                    byte railAddr = 1;
+                    if (int.TryParse(boxAddr.Text, out int addr))
+                        railAddr = (byte)addr;
+                    SendToRail(railAddr, 'W', 0x03, 0x00001401);
+                    Delay(500);
+                    SendToRail(railAddr, 'W', 0x0B, 0x00000101);
+                    Delay(500);
                 }
                 catch
                 {
                     MessageBox.Show(this, "Serial port error !", "Serial Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+
                 btnOpen.Text = "Disconnect";
                 boxPort.Enabled = false;
                 btnRefresh.Enabled = false;
@@ -504,6 +514,13 @@ namespace CamCtl
             return (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds);
         }
 
+        private void Delay(long millis)
+        {
+            long now = GetMillis();
+            while (GetMillis() - now < millis)
+                Application.DoEvents();
+        }
+
         private bool SendToRail(byte addr, char func, byte param1, uint param4)
         {
             if (serial.IsOpen)
@@ -554,6 +571,13 @@ namespace CamCtl
             return false;
         }
 
+        private int GetLoop()
+        {
+            if (!int.TryParse(boxLoop.Text, out int loop))
+                loop = 1;
+            return loop;
+        }
+
         private void btnStart_Click(object sender, EventArgs e)
         {
             if (!camCtl.DeviceValid)
@@ -577,8 +601,9 @@ namespace CamCtl
                 return;
             }
 
+            btnStart.Enabled = false;
             boxAddr.ReadOnly = true; boxSpeed.ReadOnly = true; boxStep.ReadOnly = true; barDir.Enabled = false;
-            boxTotalLen.ReadOnly = true; boxTotalCount.ReadOnly = true; boxPath.ReadOnly = true; checkExtra.Enabled = false;
+            boxTotalLen.ReadOnly = true; boxTotalCount.ReadOnly = true; boxLoop.ReadOnly = true; boxPath.ReadOnly = true; checkExtra.Enabled = false;
 
             int count = GetCount();
             string path = boxPath.Text + "\\";
@@ -597,44 +622,104 @@ namespace CamCtl
                 railStep = step;
             byte railDir = (byte)barDir.Value;
 
-            if (!SendToRail(railAddr, 'W', 0x03, 0x00001401))
-            {
-                MessageBox.Show(this, "Serial write error !", "Serial Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                goto END;
-            }
+            int loop = GetLoop();
 
-            List<string> measures = new List<string>();
-            for (int i = 0; i < count; i++)
+            if (loop <= 1)
             {
-                SendToRail(railAddr, 'D', 0x00, railDir);
-                SendToRail(railAddr, 'S', 0x00, railSpeed);
-                SendToRail(railAddr, 'P', 0x00, (uint)(railStep * 1000));
-
-                if (!SendToRail(railAddr, 'G', 0x00, 0x00))
+                List<string> measures = new List<string>();
+                for (int i = 0; i < count; i++)
                 {
-                    MessageBox.Show(this, "Rail move error !", "Rail Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    goto END;
+                    SendToRail(railAddr, 'D', 0x00, railDir);
+                    SendToRail(railAddr, 'S', 0x00, railSpeed);
+                    SendToRail(railAddr, 'P', 0x00, (uint)(railStep * 2000)); // 20细分下单个脉冲应该是0.5um
+
+                    if (!SendToRail(railAddr, 'G', 0x00, 0x00))
+                    {
+                        MessageBox.Show(this, "Rail move error !", "Rail Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        goto END;
+                    }
+                    Delay(500 * 16 / railSpeed);
+
+                    double measure = length;
+                    string str = measure.ToString("F4");
+                    measures.Add(str);
+                    var buffer = camCtl.ImageActiveBuffer;
+                    string name = checkExtra.Checked ? (i + 1).ToString("D4") : str;
+                    buffer.SaveAsBitmap(path + name + ".bmp", ICImagingControlColorformats.ICY8);
+                    Delay(500);
                 }
 
-                double measure = length;
-                string str = measure.ToString("F4");
-                measures.Add(str);
-                var buffer = camCtl.ImageActiveBuffer;
-                string name = checkExtra.Checked ? (i + 1).ToString("D4") : str;
-                buffer.SaveAsBitmap(path + name + ".bmp", ICImagingControlColorformats.ICY8);
+                if (checkExtra.Checked)
+                {
+                    string data = "";
+                    foreach (string s in measures)
+                        data += (s + "\r\n");
+                    File.WriteAllText(path + "data.txt", data);
+                }
             }
-            
-            if (checkExtra.Checked)
+            else
             {
-                string data = "";
-                foreach (string s in measures)
-                    data += (s + "\r\n");
-                File.WriteAllText(path + "data.txt", data);
+                
+                bool first = true;
+                string old = stautsLabel.Text;
+                Stopwatch stopwatch = new Stopwatch();
+                for (int l = 0; l < loop; l++)
+                {
+                    var p = path + l.ToString("D4") + "\\";
+                    Directory.CreateDirectory(p);
+                    List<string> measures = new List<string>();
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (first) stopwatch.Start();
+                        SendToRail(railAddr, 'D', 0x00, railDir);
+                        SendToRail(railAddr, 'S', 0x00, railSpeed);
+                        SendToRail(railAddr, 'P', 0x00, (uint)(railStep * 2000)); // 20细分下单个脉冲应该是0.5um
+
+                        if (!SendToRail(railAddr, 'G', 0x00, 0x00))
+                        {
+                            MessageBox.Show(this, "Rail move error !", "Rail Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            goto END;
+                        }
+                        Delay(500 * 16 / railSpeed);
+
+                        double measure = length;
+                        string str = measure.ToString("F4");
+                        measures.Add(str);
+                        var buffer = camCtl.ImageActiveBuffer;
+                        string name = checkExtra.Checked ? (i + 1).ToString("D4") : str;
+                        buffer.SaveAsBitmap(p + name + ".bmp", ICImagingControlColorformats.ICY8);
+                        Delay(500);
+                        if (first)
+                        {
+                            first = false;
+                            stopwatch.Stop();
+                            stautsLabel.Text = "Time left: " + new DateTime(stopwatch.ElapsedTicks * count * loop).ToString("HH:mm:ss");
+                            Refresh();
+                        }
+                    }
+
+                    if (checkExtra.Checked)
+                    {
+                        string data = "";
+                        foreach (string s in measures)
+                            data += (s + "\r\n");
+                        File.WriteAllText(p + "data.txt", data);
+                    }
+
+                    boxLoop.Text = (loop - 1 - l).ToString();
+                    boxLoop.Refresh();
+
+                    railDir ^= 1; // 往返测量换向
+                }
+
+                stautsLabel.Text = old;
+                Refresh();
             }
 
             END:
             boxAddr.ReadOnly = false; boxSpeed.ReadOnly = false; boxStep.ReadOnly = false; barDir.Enabled = true;
-            boxTotalLen.ReadOnly = false; boxTotalCount.ReadOnly = false; boxPath.ReadOnly = false; checkExtra.Enabled = true;
+            boxTotalLen.ReadOnly = false; boxTotalCount.ReadOnly = false; boxLoop.ReadOnly = false; boxPath.ReadOnly = false; checkExtra.Enabled = true;
+            btnStart.Enabled = true;
         }
 
         private void btnPath_Click(object sender, EventArgs e)
@@ -693,15 +778,9 @@ namespace CamCtl
                 railStep = step;
             byte railDir = (byte)barDir.Value;
 
-            if (!SendToRail(railAddr, 'W', 0x03, 0x00001401))
-            {
-                MessageBox.Show(this, "Serial write error !", "Serial Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             SendToRail(railAddr, 'D', 0x00, railDir);
             SendToRail(railAddr, 'S', 0x00, railSpeed);
-            SendToRail(railAddr, 'P', 0x00, (uint)(railStep * 1000));
+            SendToRail(railAddr, 'P', 0x00, (uint)(railStep * 2000)); // 20细分下单个脉冲应该是0.5um
 
             if (!SendToRail(railAddr, 'G', 0x00, 0x00))
             {
