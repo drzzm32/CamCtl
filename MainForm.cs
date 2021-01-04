@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.IO.Ports;
 using System.Threading;
+using System.Diagnostics;
 using System.ServiceModel;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
@@ -16,8 +18,6 @@ using AForge.Imaging.Filters;
 using Renishaw.Calibration;
 using Renishaw.Calibration.Laser;
 using Renishaw.Calibration.Laser.Service;
-using System.IO;
-using System.Diagnostics;
 
 namespace CamCtl
 {
